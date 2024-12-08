@@ -1,0 +1,28 @@
+# Stage 1: Build the Go binary
+FROM golang:1.23-alpine AS builder
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the go.mod and go.sum files first to cache dependencies
+COPY . ./
+
+# Download and cache dependencies
+RUN go mod tidy
+
+# Build the Go binary for Linux
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /kv-server kv-store/cmd/server
+
+# Stage 2: Run the Go binary in a lightweight image
+FROM alpine:latest
+
+# Copy the Go binary from the builder stage
+COPY --from=builder /kv-server ./app/
+COPY .env ./app/
+
+# Expose the port where your app will run (adjust this if needed)
+#EXPOSE 8080
+
+# Run the Go application
+CMD ["./kv-server"]
+#ENTRYPOINT ["/bin/sh","-c","sleep infinity"]
