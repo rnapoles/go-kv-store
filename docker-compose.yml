@@ -1,0 +1,22 @@
+#version: '3.7'
+
+volumes:
+    logs:
+        driver: local
+
+services:
+
+    kv-server:
+        build:
+            context: ./
+            dockerfile: ./docker/dockerfile
+        working_dir: /app
+        restart: unless-stopped
+        ports:
+            - "9999:9999"
+        networks:
+            - kv-net
+
+networks:
+    kv-net:
+    
